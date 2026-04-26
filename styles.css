@@ -1,0 +1,315 @@
+import React, { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { Home, Bath, Shirt, SprayCan, ShoppingCart, RotateCcw } from "lucide-react";
+
+const translations = {
+  en: {
+    appTitle: "HomeSpend",
+    subtitle: "Where Your Money Really Goes",
+    chooseRoom: "Choose a room",
+    selected: "selected",
+    next: "Next",
+    back: "Back",
+    skipToSpending: "Skip to Your Spending",
+    startOver: "Start Over",
+    usageTitle: "Your Household Usage",
+    usageCopy: "You chose non-food, cleaning and personal care products that your household uses on a regular basis.",
+    spendingTitle: "Your Spending",
+    spendingCopy: "Enter your average weekly grocery spending. Then choose the estimated percentage used for non-food, cleaning and personal care items.",
+    weeklySpend: "Weekly grocery spend",
+    choosePercent: "Choose an estimate",
+    resultsTitle: "Your Estimated HomeSpend",
+    resultsCopy: "This estimate shows how much money may be going toward household cleaning and personal care products over time.",
+    weeklyEstimate: "Estimated weekly household product spend",
+    oneYear: "1 Year",
+    fiveYears: "5 Years",
+    tenYears: "10 Years",
+    kitchen: "Kitchen",
+    bathroom: "Bathroom",
+    laundry: "Laundry",
+    household: "Household",
+    selectedProducts: "selected products",
+    estimateNote: "This quick estimate is based on the idea that a portion of regular grocery spending goes toward non-food, cleaning, laundry, household, and personal care products.",
+  },
+  es: {
+    appTitle: "HomeSpend",
+    subtitle: "Dónde se va su dinero",
+    chooseRoom: "Elija una habitación",
+    selected: "seleccionados",
+    next: "Siguiente",
+    back: "Atrás",
+    skipToSpending: "Ir a sus gastos",
+    startOver: "Comenzar de nuevo",
+    usageTitle: "Uso del hogar",
+    usageCopy: "Usted eligió productos no alimentarios, de limpieza y cuidado personal que su hogar usa regularmente.",
+    spendingTitle: "Sus gastos",
+    spendingCopy: "Ingrese su gasto semanal promedio en comestibles. Luego elija el porcentaje estimado usado en productos no alimentarios, de limpieza y cuidado personal.",
+    weeklySpend: "Gasto semanal",
+    choosePercent: "Elija un estimado",
+    resultsTitle: "Su HomeSpend estimado",
+    resultsCopy: "Este estimado muestra cuánto dinero podría estar gastando en productos de limpieza y cuidado personal con el tiempo.",
+    weeklyEstimate: "Gasto semanal estimado en productos del hogar",
+    oneYear: "1 año",
+    fiveYears: "5 años",
+    tenYears: "10 años",
+    kitchen: "Cocina",
+    bathroom: "Baño",
+    laundry: "Lavandería",
+    household: "Hogar",
+    selectedProducts: "productos seleccionados",
+    estimateNote: "Este estimado rápido se basa en la idea de que una parte del gasto regular de comestibles se usa en productos no alimentarios, limpieza, lavandería, hogar y cuidado personal.",
+  },
+};
+
+const itemText = {
+  dishSoap: { en: "Dish Soap", es: "Jabón para platos" },
+  countertopCleaner: { en: "Countertop Cleaner", es: "Limpiador de mostradores" },
+  applianceCleaner: { en: "Appliance Cleaner", es: "Limpiador de electrodomésticos" },
+  allPurposeCleaner: { en: "All Purpose Cleaner", es: "Limpiador multiuso" },
+  disinfectant: { en: "Disinfectant", es: "Desinfectante" },
+  woodCabinetCleaner: { en: "Wood Cabinet Cleaner", es: "Limpiador de gabinetes" },
+  stoveOvenCleaner: { en: "Stove/Oven Cleaner", es: "Limpiador de estufa/horno" },
+  shampoo: { en: "Shampoo", es: "Champú" },
+  conditioner: { en: "Conditioner", es: "Acondicionador" },
+  bodyWash: { en: "Body Wash", es: "Jabón corporal" },
+  handSoap: { en: "Hand Soap", es: "Jabón de manos" },
+  toiletCleaner: { en: "Toilet Cleaner", es: "Limpiador de inodoro" },
+  mirrorGlassCleaner: { en: "Mirror/Glass Cleaner", es: "Limpiador de espejos/vidrio" },
+  showerTubTileCleaner: { en: "Shower/Tub/Tile Cleaner", es: "Limpiador de ducha/tina/azulejo" },
+  laundryDetergent: { en: "Laundry Detergent", es: "Detergente" },
+  fabricSoftener: { en: "Fabric Softener", es: "Suavizante" },
+  stainRemover: { en: "Stain Remover", es: "Quitamanchas" },
+  bleach: { en: "Bleach", es: "Blanqueador" },
+  dryerSheets: { en: "Dryer Sheets", es: "Toallitas para secadora" },
+  scentBooster: { en: "Scent Booster", es: "Aromatizante para ropa" },
+  floorCleaner: { en: "Floor Cleaner", es: "Limpiador de pisos" },
+  windowCleaner: { en: "Window Cleaner", es: "Limpiador de ventanas" },
+  airFreshener: { en: "Air Freshener", es: "Ambientador" },
+  carpetRugCleaner: { en: "Carpet/Rug Cleaner", es: "Limpiador de alfombras" },
+  heavyDutyOutdoorCleaner: { en: "Heavy Duty Outdoor Cleaner", es: "Limpiador fuerte para exteriores" },
+  furniturePolish: { en: "Furniture Polish", es: "Pulidor de muebles" },
+};
+
+const rooms = [
+  {
+    key: "kitchen",
+    icon: SprayCan,
+    image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=80",
+    itemIds: ["dishSoap", "countertopCleaner", "applianceCleaner", "allPurposeCleaner", "disinfectant", "woodCabinetCleaner", "stoveOvenCleaner"],
+  },
+  {
+    key: "bathroom",
+    icon: Bath,
+    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=900&q=80",
+    itemIds: ["shampoo", "conditioner", "bodyWash", "handSoap", "toiletCleaner", "mirrorGlassCleaner", "showerTubTileCleaner"],
+  },
+  {
+    key: "laundry",
+    icon: Shirt,
+    image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=900&q=80",
+    itemIds: ["laundryDetergent", "fabricSoftener", "stainRemover", "bleach", "dryerSheets", "scentBooster"],
+  },
+  {
+    key: "household",
+    icon: Home,
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=900&q=80",
+    itemIds: ["floorCleaner", "windowCleaner", "airFreshener", "carpetRugCleaner", "heavyDutyOutdoorCleaner", "furniturePolish"],
+  },
+];
+
+const percentOptions = [15, 20, 25, 30];
+const emptySelections = { kitchen: [], bathroom: [], laundry: [], household: [] };
+
+export default function App() {
+  const [lang, setLang] = useState("en");
+  const [screen, setScreen] = useState("home");
+  const [activeRoomIndex, setActiveRoomIndex] = useState(0);
+  const [selectedItems, setSelectedItems] = useState(emptySelections);
+  const [weeklySpend, setWeeklySpend] = useState("250");
+  const [percent, setPercent] = useState(20);
+
+  const t = translations[lang];
+  const activeRoom = rooms[activeRoomIndex];
+
+  const totalItems = useMemo(() => Object.values(selectedItems).reduce((sum, arr) => sum + arr.length, 0), [selectedItems]);
+  const weeklyHouseholdSpend = Number(weeklySpend || 0) * (percent / 100);
+  const annualSpend = weeklyHouseholdSpend * 52;
+
+  function toggleItem(roomKey, itemId) {
+    setSelectedItems((prev) => {
+      const current = prev[roomKey];
+      const exists = current.includes(itemId);
+      return {
+        ...prev,
+        [roomKey]: exists ? current.filter((x) => x !== itemId) : [...current, itemId],
+      };
+    });
+  }
+
+  function resetApp() {
+    setScreen("home");
+    setActiveRoomIndex(0);
+    setSelectedItems(emptySelections);
+    setWeeklySpend("250");
+    setPercent(20);
+  }
+
+  function goNextRoom() {
+    if (activeRoomIndex < rooms.length - 1) {
+      setActiveRoomIndex(activeRoomIndex + 1);
+    } else {
+      setScreen("usage");
+    }
+  }
+
+  function goBackRoom() {
+    if (activeRoomIndex > 0) {
+      setActiveRoomIndex(activeRoomIndex - 1);
+    } else {
+      setScreen("home");
+    }
+  }
+
+  const currency = (value) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value || 0);
+
+  return (
+    <div className="app-shell">
+      <div className="phone-frame">
+        <header className="header">
+          <div>
+            <h1>{t.appTitle}</h1>
+            <p>{t.subtitle}</p>
+          </div>
+          <button className="language-button" onClick={() => setLang(lang === "en" ? "es" : "en")}>
+            {lang === "en" ? "ES" : "EN"}
+          </button>
+        </header>
+
+        {screen === "home" && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <h2 className="screen-title">{t.chooseRoom}</h2>
+            <div className="room-grid">
+              {rooms.map((room, index) => {
+                const Icon = room.icon;
+                return (
+                  <button key={room.key} className="room-card" onClick={() => { setActiveRoomIndex(index); setScreen("room"); }}>
+                    <div className="room-image-wrap">
+                      <img src={room.image} alt={t[room.key]} />
+                      <div className="image-shade" />
+                      <div className="icon-bubble"><Icon size={22} /></div>
+                    </div>
+                    <div className="room-card-body">
+                      <div className="room-name">{t[room.key]}</div>
+                      <div className="room-count">{selectedItems[room.key].length} {t.selected}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <button className="outline-button full" onClick={() => setScreen("spending")}>{t.skipToSpending}</button>
+          </motion.div>
+        )}
+
+        {screen === "room" && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="hero-card">
+              <img src={activeRoom.image} alt={t[activeRoom.key]} />
+              <div className="hero-shade" />
+              <div className="hero-text">
+                <h2>{t[activeRoom.key]}</h2>
+                <p>{selectedItems[activeRoom.key].length} {t.selected}</p>
+              </div>
+            </div>
+
+            <div className="item-list">
+              {activeRoom.itemIds.map((itemId) => {
+                const isSelected = selectedItems[activeRoom.key].includes(itemId);
+                return (
+                  <button
+                    key={itemId}
+                    onClick={() => toggleItem(activeRoom.key, itemId)}
+                    className={`item-button ${isSelected ? "selected" : ""}`}
+                  >
+                    {isSelected ? "✓ " : ""}{itemText[itemId][lang]}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="two-buttons">
+              <button className="outline-button" onClick={goBackRoom}>{t.back}</button>
+              <button className="dark-button" onClick={goNextRoom}>{t.next}</button>
+            </div>
+          </motion.div>
+        )}
+
+        {screen === "usage" && (
+          <motion.div className="white-panel center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <ShoppingCart className="main-icon" size={48} />
+            <h2>{t.usageTitle}</h2>
+            <p>{t.usageCopy}</p>
+            <div className="big-number">{totalItems}</div>
+            <div className="small-label">{t.selectedProducts}</div>
+            <button className="dark-button full" onClick={() => setScreen("spending")}>{t.next}</button>
+            <button className="outline-button full" onClick={() => setScreen("home")}>{t.back}</button>
+          </motion.div>
+        )}
+
+        {screen === "spending" && (
+          <motion.div className="white-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <h2>{t.spendingTitle}</h2>
+            <p>{t.spendingCopy}</p>
+            <label>{t.weeklySpend}</label>
+            <div className="money-input">
+              <span>$</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={weeklySpend}
+                onChange={(e) => setWeeklySpend(e.target.value)}
+              />
+            </div>
+            <div className="field-title">{t.choosePercent}</div>
+            <div className="percent-grid">
+              {percentOptions.map((p) => (
+                <button key={p} onClick={() => setPercent(p)} className={percent === p ? "percent active" : "percent"}>{p}%</button>
+              ))}
+            </div>
+            <div className="estimate-box">
+              <div>{t.weeklyEstimate}</div>
+              <strong>{currency(weeklyHouseholdSpend)}</strong>
+            </div>
+            <p className="note">{t.estimateNote}</p>
+            <button className="dark-button full" onClick={() => setScreen("results")}>{t.next}</button>
+            <button className="outline-button full" onClick={() => setScreen(totalItems > 0 ? "usage" : "home")}>{t.back}</button>
+          </motion.div>
+        )}
+
+        {screen === "results" && (
+          <motion.div className="white-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <h2>{t.resultsTitle}</h2>
+            <p>{t.resultsCopy}</p>
+            <div className="results-list">
+              <ResultRow label={t.oneYear} value={currency(annualSpend)} />
+              <ResultRow label={t.fiveYears} value={currency(annualSpend * 5)} />
+              <ResultRow label={t.tenYears} value={currency(annualSpend * 10)} />
+            </div>
+            <button className="outline-button full icon-button" onClick={resetApp}>
+              <RotateCcw size={18} /> {t.startOver}
+            </button>
+            <button className="dark-button full" onClick={() => setScreen("spending")}>{t.back}</button>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResultRow({ label, value }) {
+  return (
+    <div className="result-row">
+      <div>{label}</div>
+      <strong>{value}</strong>
+    </div>
+  );
+}
